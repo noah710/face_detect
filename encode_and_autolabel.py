@@ -32,6 +32,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--images", required=True,
         help="path to input directory of images")
+    ap.add_argument("-d", "--detection_method", default="hog",
+        help="detection method to use (cnn/hog)")
+    ap.add_argument("-r", "--resize", default="100",
+        help="scale factor percentage")
     args = vars(ap.parse_args())
 
     # need to figure out how to store names and encoding together
@@ -45,12 +49,11 @@ def main():
         # Turns out my images already are rgb. I left the var name as rgb for simplicity
         rgb = cv2.imread(imagePath) #cv2.cvtColor(cv2.imread(imagePath), cv2.COLOR_BGR2RGB) 
 
-        # I'm resizing the pictures to hopefully process them faster
-        while ((rgb.shape[1]*rgb.shape[0]) > 2000*2000):
-            rgb = resizeImg(75,rgb)
+        # resize pics
+        rgb = resizeImg(int(args["resize"]),rgb)
 
         # get bounding boxes of faces in image
-        boxes = face_recognition.face_locations(rgb, number_of_times_to_upsample=0, model="cnn") #TODO: Batch processing
+        boxes = face_recognition.face_locations(rgb, number_of_times_to_upsample=0, model=args["detection_method"]) #TODO: Batch processing
 
         # get encodings of all faces in boxes
         if len(boxes) == 0: # This shouldnt happen if you use my dataset prep script
